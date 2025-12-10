@@ -26,12 +26,11 @@ RUN set -eux \
     # make WITH_OPENSSL=0 \
     # make \
     # 编译 wrk（添加 -static-libgcc 确保 libgcc 也被静态链接）
-    make -j$(nproc) WITH_OPENSSL=1 \
+    # make -j$(nproc) WITH_OPENSSL=1 \
+    make -j$(nproc) WITH_OPENSSL=1 WITH_LUAJIT=/wrk/obj \
     CC="gcc" \
-    CFLAGS="-static -O3 -static-libgcc" \
-    # LDFLAGS="-static -L/usr/lib -lssl -lcrypto -lz -static-libgcc" \
-    # LDFLAGS="-static -static-libgcc" \
-    LDFLAGS="-static -static-libgcc -Wl,--strip-all" \
+    CFLAGS="-static -O3 -static-libgcc -I/wrk/obj/include/luajit-2.1" \
+    LDFLAGS="-static -static-libgcc -Wl,--strip-all -L/wrk/obj/lib" \
     # && ls -lh /wrk/wrk \
     && echo "Binary size after build:" \
     && du -b /wrk/$FILENAME \
@@ -40,6 +39,7 @@ RUN set -eux \
     && echo "Binary size after stripping:" \
     && du -b /wrk/$FILENAME \
     && upx --best --lzma /wrk/$FILENAME \
+    && echo "Binary size after upx:" \
     && du -b /wrk/$FILENAME
 
 # 阶段2: 运行层
