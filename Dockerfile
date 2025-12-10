@@ -27,7 +27,7 @@ RUN set -eux \
     # make \
     # 编译 wrk（添加 -static-libgcc 确保 libgcc 也被静态链接）
     # make -j$(nproc) WITH_OPENSSL=1 \
-    make -j$(nproc) WITH_OPENSSL=1 WITH_LUAJIT=/wrk/obj \
+    make -j$(nproc) WITH_OPENSSL=1 \
     CC="gcc" \
     # 关键修改：强制静态编译，并链接必要的静态库
     CFLAGS="-static -O3" \
