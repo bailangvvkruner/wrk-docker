@@ -30,7 +30,8 @@ RUN set -eux \
     CC="gcc" \
     CFLAGS="-static -O3 -static-libgcc" \
     # LDFLAGS="-static -L/usr/lib -lssl -lcrypto -lz -static-libgcc" \
-    LDFLAGS="-static -static-libgcc" \
+    # LDFLAGS="-static -static-libgcc" \
+    LDFLAGS="-static -static-libgcc -Wl,--strip-all"
     # && ls -lh /wrk/wrk \
     && echo "Binary size after build:" \
     && du -b /wrk/$FILENAME \
