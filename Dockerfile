@@ -22,16 +22,27 @@ RUN set -eux \
     # 克隆并编译wrk
     && git clone https://github.com/wg/wrk.git --depth 1 && \
     cd wrk && \
-    make clean && \
-    # make WITH_OPENSSL=0 \
-    # make \
-    # 编译 wrk（添加 -static-libgcc 确保 libgcc 也被静态链接）
-    # make -j$(nproc) WITH_OPENSSL=1 \
-    make -j$(nproc) WITH_OPENSSL=1 \
+    # 在编译前创建必要的目录和符号链接，确保能找到LuaJIT头文件
+    && mkdir -p /usr/local/include /usr/local/lib \
+    # wrk的构建过程会将LuaJIT安装到/wrk/obj，我们需要让编译器能找到它
+    && echo "Preparing build environment for LuaJIT headers..." \
+    # 先正常编译，让LuaJIT被构建和安装
+    && make clean \
+    # 首次编译（这会构建LuaJIT）
+    && make -j$(nproc) WITH_OPENSSL=1 \
+    # 编译后创建符号链接，确保后续步骤能找到LuaJIT
+    && if [ -d /wrk/obj/include/luajit-2.1 ]; then \
+         ln -sf /wrk/obj/include/luajit-2.1/* /usr/local/include/ 2>/dev/null || true; \
+         ln -sf /wrk/obj/lib/* /usr/local/lib/ 2>/dev/null || true; \
+       fi \
+    # 清理并重新编译，确保静态链接正确
+    && make clean \
+    # 重新编译，确保所有依赖都被正确静态链接
+    && make -j$(nproc) WITH_OPENSSL=1 \
     CC="gcc" \
-    # 关键修改：强制静态编译，并链接必要的静态库
-    CFLAGS="-static -O3" \
-    LDFLAGS="-static -Wl,--strip-all -llibgcc -llibluajit -lpthread -lm -ldl" \
+    # 关键修改：强制静态编译，确保libgcc被静态链接
+    CFLAGS="-static -O3 -static-libgcc" \
+    LDFLAGS="-static -static-libgcc -Wl,--strip-all" \
     # && ls -lh /wrk/wrk \
     && echo "Binary size after build:" \
     && du -b /wrk/$FILENAME \
