@@ -6,7 +6,7 @@ FROM alpine:3.19 AS builder
 
 # 安装构建依赖
 RUN set -eux \
-    && FILENAME=hugo \
+    && FILENAME=wrk \
     && apk add --no-cache --no-scripts --virtual .build-deps \
     git \
     make \
