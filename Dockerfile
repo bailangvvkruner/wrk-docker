@@ -23,7 +23,7 @@ RUN set -eux \
     && git clone https://github.com/wg/wrk.git --depth 1 && \
     cd wrk && \
     # 在编译前创建必要的目录和符号链接，确保能找到LuaJIT头文件
-    && mkdir -p /usr/local/include /usr/local/lib \
+    mkdir -p /usr/local/include /usr/local/lib \
     # wrk的构建过程会将LuaJIT安装到/wrk/obj，我们需要让编译器能找到它
     && echo "Preparing build environment for LuaJIT headers..." \
     # 先正常编译，让LuaJIT被构建和安装
