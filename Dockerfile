@@ -29,8 +29,9 @@ RUN set -eux \
     # make -j$(nproc) WITH_OPENSSL=1 \
     make -j$(nproc) WITH_OPENSSL=1 WITH_LUAJIT=/wrk/obj \
     CC="gcc" \
-    CFLAGS="-static -O3 -static-libgcc -I/wrk/obj/include/luajit-2.1" \
-    LDFLAGS="-static -static-libgcc -Wl,--strip-all -L/wrk/obj/lib" \
+    # 关键修改：强制静态编译，并链接必要的静态库
+    CFLAGS="-static -O3" \
+    LDFLAGS="-static -Wl,--strip-all -llibgcc -llibluajit -lpthread -lm -ldl" \
     # && ls -lh /wrk/wrk \
     && echo "Binary size after build:" \
     && du -b /wrk/$FILENAME \
