@@ -52,6 +52,7 @@ jobs:
           platforms: |
               linux/amd64
               linux/arm64
+              linux/386
           push: true
           tags: |
             ${{ env.DOCKER_REPO }}:${{ env.IMAGE_TAG }}
