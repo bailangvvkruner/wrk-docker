@@ -14,7 +14,9 @@ RUN set -eux \
     musl-dev \
     libbsd-dev \
     zlib-dev \
+    # 安装OpenSSL开发包（包含头文件和静态库）
     openssl-dev \
+    openssl-libs-static \
     perl \
     # 包含strip命令
     binutils \
