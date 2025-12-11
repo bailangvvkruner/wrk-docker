@@ -34,32 +34,32 @@ RUN set -eux \
     && find / -name *wrk*
 
 
-#     # 阶段2: 运行层
-# # FROM alpine:3.19
-# FROM scratch
-
-# # # 安装运行时依赖 - libgcc提供libgcc_s.so.1共享库
-# # RUN apk add --no-cache libgcc
-
-# # # 从编译层复制wrk二进制文件
-# # COPY --from=builder /wrk/wrk /usr/local/bin/wrk
-
-# # # 设置入口点
-# # ENTRYPOINT ["/usr/local/bin/wrk"]
-
-# # 只复制编译好的二进制文件（二进制位于/wrk/wrk目录内）
-# COPY --from=builder /wrk/wrk /wrk
-# # 设置容器启动命令
-# ENTRYPOINT ["/wrk"]
-
 # 阶段2: 运行层
-FROM alpine:3.19
+# FROM alpine:3.19
+FROM scratch
 
-# 安装运行时最小依赖
-RUN apk add --no-cache libgcc
+# # 安装运行时依赖 - libgcc提供libgcc_s.so.1共享库
+# RUN apk add --no-cache libgcc
 
-# 从编译层复制wrk二进制文件
-COPY --from=builder /wrk/wrk /usr/local/bin/wrk
+# # 从编译层复制wrk二进制文件
+# COPY --from=builder /wrk/wrk /usr/local/bin/wrk
 
-# 设置入口点
-ENTRYPOINT ["/usr/local/bin/wrk"]
+# # 设置入口点
+# ENTRYPOINT ["/usr/local/bin/wrk"]
+
+# 只复制编译好的二进制文件（二进制位于/wrk/wrk目录内）
+COPY --from=builder /wrk/wrk /wrk
+# 设置容器启动命令
+ENTRYPOINT ["/wrk"]
+
+# # 阶段2: 运行层
+# FROM alpine:3.19
+
+# # 安装运行时最小依赖
+# RUN apk add --no-cache libgcc
+
+# # 从编译层复制wrk二进制文件
+# COPY --from=builder /wrk/wrk /usr/local/bin/wrk
+
+# # 设置入口点
+# ENTRYPOINT ["/usr/local/bin/wrk"]
