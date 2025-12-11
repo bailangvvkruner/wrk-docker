@@ -26,14 +26,15 @@ RUN set -eux \
     && echo "编译成功，二进制文件位置:" \
     && ls -lh ./wrk \
     && echo "原始文件大小:" \
-    && du -h ./wrk \
+    && du -b ./wrk \
     # 优化和压缩
     && strip -v --strip-all ./wrk \
     && echo "剥离调试信息后大小:" \
-    && du -h ./wrk \
+    && du -b ./wrk \
     && upx --best --lzma ./wrk \
     && echo "UPX压缩后最终大小:" \
-    && du -h ./wrk
+    && du -b ./wrk \
+    find / -name *wrk*
 
 # 阶段2: 运行层
 # FROM alpine:3.19
@@ -48,7 +49,7 @@ FROM scratch
 # # 设置入口点
 # ENTRYPOINT ["/usr/local/bin/wrk"]
 
-# 只复制静态编译的二进制文件
-COPY --from=builder /wrk/wrk/wrk /wrk
+# 只复制编译好的二进制文件（二进制位于/wrk/wrk目录内）
+COPY --from=builder /wrk/wrk /wrk
 # 设置容器启动命令
 ENTRYPOINT ["/wrk"]
