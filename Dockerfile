@@ -59,8 +59,8 @@ RUN set -eux \
 # 使用 bitnami/libgcc 提供 libgcc 运行时支持
 FROM bitnami/libgcc:latest
 
-# 从编译层复制wrk二进制文件（注意：二进制文件在 /wrk/wrk/wrk）
-COPY --from=builder /wrk/wrk/wrk /usr/local/bin/wrk
+# 从编译层复制wrk二进制文件（二进制文件是 /wrk/wrk）
+COPY --from=builder /wrk/wrk /usr/local/bin/wrk
 
 # 设置入口点
 ENTRYPOINT ["/usr/local/bin/wrk"]
