@@ -28,9 +28,9 @@ RUN set -eux \
     && strip -v --strip-all ./wrk \
     && echo "剥离调试信息后:" \
     && ls -lh ./wrk \
-    # && upx --best --lzma ./wrk \
-    # && echo "UPX压缩后最终大小:" \
-    # && du -b ./wrk \
+    && upx --best --lzma ./wrk \
+    && echo "UPX压缩后最终大小:" \
+    && du -b ./wrk \
     && find / -name *wrk*
 
 
