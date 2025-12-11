@@ -21,17 +21,25 @@ RUN set -eux \
     # 克隆wrk源码
     && git clone https://github.com/wg/wrk.git --depth 1 \
     && cd wrk \
-    # 编译wrk（不使用UPX压缩，避免运行时问题）
+    # 编译wrk（添加静态链接标志以确保在scratch中运行）
     && make -j$(nproc) WITH_OPENSSL=1 \
-    && echo "编译成功，二进制文件位置和大小:" \
+    CC="gcc" \
+    CFLAGS="-static -O3" \
+    LDFLAGS="-static -Wl,--strip-all" \
+    && echo "编译成功，测试wrk基本功能:" \
+    && ./wrk --version \
+    && echo "二进制文件信息:" \
+    && file ./wrk \
     && ls -lh ./wrk \
+    # 优化和压缩
     && strip -v --strip-all ./wrk \
     && echo "剥离调试信息后:" \
     && ls -lh ./wrk \
     && upx --best --lzma ./wrk \
     && echo "UPX压缩后最终大小:" \
-    && du -b ./wrk \
-    && find / -name *wrk*
+    && ls -lh ./wrk \
+    && echo "验证压缩后文件仍可执行:" \
+    && ./wrk --version
 
 
 # 阶段2: 运行层
