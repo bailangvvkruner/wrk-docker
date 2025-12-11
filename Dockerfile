@@ -61,7 +61,7 @@ RUN set -eux \
 FROM scratch
 
 # 从Alpine容器中复制libgcc库
-COPY --from=builder /lib/libgcc_s.so.1 /lib/
+COPY --from=builder /usr/lib/libgcc_s.so.1 /lib/
 # 从编译层复制wrk二进制文件（二进制文件是 /wrk/wrk）
 COPY --from=builder /wrk/wrk /wrk
 ENTRYPOINT ["/wrk"]
