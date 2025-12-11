@@ -39,17 +39,12 @@ RUN set -eux \
     LDFLAGS="-static -Wl,--strip-all" \
     && echo "编译成功，测试wrk基本功能:" \
     && ./wrk --version \
-    && echo "二进制文件信息:" \
-    && file ./wrk \
-    && ls -lh ./wrk \
-    # 优化和压缩
+    && echo "优化和压缩..." \
     && strip -v --strip-all ./wrk \
-    && echo "剥离调试信息后:" \
-    && ls -lh ./wrk \
     && upx --best --lzma ./wrk \
-    && echo "UPX压缩后最终大小:" \
+    && echo "最终文件信息:" \
     && ls -lh ./wrk \
-    && echo "验证压缩后文件仍可执行:" \
+    && echo "验证最终文件可执行性:" \
     && ./wrk --version
 
 
