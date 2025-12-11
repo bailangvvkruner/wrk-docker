@@ -21,7 +21,18 @@ RUN set -eux \
     # 克隆wrk源码
     && git clone https://github.com/wg/wrk.git --depth 1 \
     && cd wrk \
-    # 编译wrk（添加静态链接标志以确保在scratch中运行）
+    # 创建必要的目录和符号链接，确保能找到LuaJIT头文件
+    && mkdir -p /usr/local/include /usr/local/lib \
+    && echo "准备LuaJIT头文件环境..." \
+    # 先正常编译一次，让LuaJIT被构建和安装
+    && make -j$(nproc) WITH_OPENSSL=1 \
+    # 创建符号链接，确保后续静态编译能找到LuaJIT
+    && if [ -d /wrk/obj/include/luajit-2.1 ]; then \
+         ln -sf /wrk/obj/include/luajit-2.1/* /usr/local/include/ 2>/dev/null || true; \
+         ln -sf /wrk/obj/lib/* /usr/local/lib/ 2>/dev/null || true; \
+       fi \
+    # 清理并重新静态编译
+    && make clean \
     && make -j$(nproc) WITH_OPENSSL=1 \
     CC="gcc" \
     CFLAGS="-static -O3" \
