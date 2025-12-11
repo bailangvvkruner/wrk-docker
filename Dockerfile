@@ -28,18 +28,18 @@ RUN set -eux \
     && strip -v --strip-all ./wrk \
     && echo "剥离调试信息后:" \
     && ls -lh ./wrk \
-    # && upx --best --lzma ./wrk \
-    # && echo "UPX压缩后最终大小:" \
-    # && du -b ./wrk \
+    && upx --best --lzma ./wrk \
+    && echo "UPX压缩后最终大小:" \
+    && du -b ./wrk \
     && find / -name *wrk*
 
 
 # # 阶段2: 运行层
-# # FROM alpine:3.19
+FROM alpine:3.19
 # FROM scratch
 
 # # # 安装运行时依赖 - libgcc提供libgcc_s.so.1共享库
-# # RUN apk add --no-cache libgcc
+RUN apk add --no-cache libgcc
 
 # # # 从编译层复制wrk二进制文件
 # # COPY --from=builder /wrk/wrk /usr/local/bin/wrk
@@ -54,7 +54,7 @@ RUN set -eux \
 
 # 阶段2: 运行层
 # FROM alpine:3.19
-FROM busybox:musl
+# FROM busybox:musl
 
 # 安装运行时最小依赖
 # RUN apk add --no-cache libgcc
