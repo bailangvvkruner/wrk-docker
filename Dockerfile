@@ -4,7 +4,7 @@
 # 阶段1: 编译层
 FROM alpine:3.19 AS builder
 
-# 安装构建依赖
+# 安装构建依赖（包含OpenSSL静态库）
 RUN set -eux \
     && FILENAME=wrk \
     && apk add --no-cache --no-scripts --virtual .build-deps \
@@ -14,47 +14,28 @@ RUN set -eux \
     musl-dev \
     libbsd-dev \
     zlib-dev \
-    # 安装OpenSSL开发包（包含头文件和静态库）
     openssl-dev \
     openssl-libs-static \
     perl \
-    # 包含strip命令
     binutils \
     upx \
-    # 克隆并编译wrk
+    # 克隆wrk源码
     && git clone https://github.com/wg/wrk.git --depth 1 && \
     cd wrk && \
-    # 在编译前创建必要的目录和符号链接，确保能找到LuaJIT头文件
-    mkdir -p /usr/local/include /usr/local/lib \
-    # wrk的构建过程会将LuaJIT安装到/wrk/obj，我们需要让编译器能找到它
-    && echo "Preparing build environment for LuaJIT headers..." \
-    # 先正常编译，让LuaJIT被构建和安装
+    # 清理并一次性进行静态编译
     && make clean \
-    # 首次编译（这会构建LuaJIT）
-    && make -j$(nproc) WITH_OPENSSL=1 \
-    # 编译后创建符号链接，确保后续步骤能找到LuaJIT
-    && if [ -d /wrk/obj/include/luajit-2.1 ]; then \
-         ln -sf /wrk/obj/include/luajit-2.1/* /usr/local/include/ 2>/dev/null || true; \
-         ln -sf /wrk/obj/lib/* /usr/local/lib/ 2>/dev/null || true; \
-       fi \
-    # 清理并重新编译，确保静态链接正确
-    && make clean \
-    # 重新编译，确保所有依赖都被正确静态链接
     && make -j$(nproc) WITH_OPENSSL=1 \
     CC="gcc" \
-    # 关键修改：强制静态编译，确保libgcc被静态链接
     CFLAGS="-static -O3 -static-libgcc" \
     LDFLAGS="-static -static-libgcc -Wl,--strip-all" \
-    # && ls -lh /wrk/wrk \
     && echo "Binary size after build:" \
-    && du -b /wrk/$FILENAME \
-    && strip -v --strip-all /wrk/wrk \
-    # && ls -lh /wrk/wrk
+    && du -b ./wrk \
+    && strip -v --strip-all ./wrk \
     && echo "Binary size after stripping:" \
-    && du -b /wrk/$FILENAME \
-    && upx --best --lzma /wrk/$FILENAME \
+    && du -b ./wrk \
+    && upx --best --lzma ./wrk \
     && echo "Binary size after upx:" \
-    && du -b /wrk/$FILENAME
+    && du -b ./wrk
 
 # 阶段2: 运行层
 # FROM alpine:3.19
