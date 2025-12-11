@@ -4,9 +4,8 @@
 # 阶段1: 编译层
 FROM alpine:3.19 AS builder
 
-# 安装构建依赖（包含OpenSSL静态库）
+# 安装构建依赖
 RUN set -eux \
-    && FILENAME=wrk \
     && apk add --no-cache --no-scripts --virtual .build-deps \
     git \
     make \
@@ -22,21 +21,19 @@ RUN set -eux \
     # 克隆wrk源码
     && git clone https://github.com/wg/wrk.git --depth 1 \
     && cd wrk \
-    # 清理并一次性进行静态编译
-    && make clean \
+    # 单次编译，避免LuaJIT集成问题
     && make -j$(nproc) WITH_OPENSSL=1 \
-    CC="gcc" \
-    CFLAGS="-static -O3 -static-libgcc" \
-    LDFLAGS="-static -static-libgcc -Wl,--strip-all" \
-    && echo "Binary size after build:" \
-    && du -b ./wrk \
+    && echo "编译成功，二进制文件位置:" \
+    && ls -lh ./wrk \
+    && echo "原始文件大小:" \
+    && du -h ./wrk \
+    # 优化和压缩
     && strip -v --strip-all ./wrk \
-    && echo "Binary size after stripping:" \
-    && du -b ./wrk \
+    && echo "剥离调试信息后大小:" \
+    && du -h ./wrk \
     && upx --best --lzma ./wrk \
-    && echo "Binary size after upx:" \
-    && du -b ./wrk \
-    && find / -name *wrk*
+    && echo "UPX压缩后最终大小:" \
+    && du -h ./wrk
 
 # 阶段2: 运行层
 # FROM alpine:3.19
