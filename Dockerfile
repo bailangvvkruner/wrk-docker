@@ -57,7 +57,7 @@ RUN set -eux \
 FROM busybox:musl
 
 # 安装运行时最小依赖
-RUN apk add --no-cache libgcc
+# RUN apk add --no-cache libgcc
 
 # 从编译层复制wrk二进制文件
 COPY --from=builder /wrk/wrk /usr/local/bin/wrk
