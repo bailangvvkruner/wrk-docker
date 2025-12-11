@@ -21,35 +21,45 @@ RUN set -eux \
     # 克隆wrk源码
     && git clone https://github.com/wg/wrk.git --depth 1 \
     && cd wrk \
-    # 单次编译，避免LuaJIT集成问题
+    # 编译wrk（不使用UPX压缩，避免运行时问题）
     && make -j$(nproc) WITH_OPENSSL=1 \
-    && echo "编译成功，二进制文件位置:" \
+    && echo "编译成功，二进制文件位置和大小:" \
     && ls -lh ./wrk \
-    && echo "原始文件大小:" \
-    && du -b ./wrk \
-    # 优化和压缩
     && strip -v --strip-all ./wrk \
-    && echo "剥离调试信息后大小:" \
-    && du -b ./wrk \
-    && upx --best --lzma ./wrk \
-    && echo "UPX压缩后最终大小:" \
-    && du -b ./wrk \
+    && echo "剥离调试信息后:" \
+    && ls -lh ./wrk \
+    # && upx --best --lzma ./wrk \
+    # && echo "UPX压缩后最终大小:" \
+    # && du -b ./wrk \
     && find / -name *wrk*
 
+
+#     # 阶段2: 运行层
+# # FROM alpine:3.19
+# FROM scratch
+
+# # # 安装运行时依赖 - libgcc提供libgcc_s.so.1共享库
+# # RUN apk add --no-cache libgcc
+
+# # # 从编译层复制wrk二进制文件
+# # COPY --from=builder /wrk/wrk /usr/local/bin/wrk
+
+# # # 设置入口点
+# # ENTRYPOINT ["/usr/local/bin/wrk"]
+
+# # 只复制编译好的二进制文件（二进制位于/wrk/wrk目录内）
+# COPY --from=builder /wrk/wrk /wrk
+# # 设置容器启动命令
+# ENTRYPOINT ["/wrk"]
+
 # 阶段2: 运行层
-# FROM alpine:3.19
-FROM scratch
+FROM alpine:3.19
 
-# # 安装运行时依赖 - libgcc提供libgcc_s.so.1共享库
-# RUN apk add --no-cache libgcc
+# 安装运行时最小依赖
+RUN apk add --no-cache libgcc
 
-# # 从编译层复制wrk二进制文件
-# COPY --from=builder /wrk/wrk /usr/local/bin/wrk
+# 从编译层复制wrk二进制文件
+COPY --from=builder /wrk/wrk /usr/local/bin/wrk
 
-# # 设置入口点
-# ENTRYPOINT ["/usr/local/bin/wrk"]
-
-# 只复制编译好的二进制文件（二进制位于/wrk/wrk目录内）
-COPY --from=builder /wrk/wrk /wrk
-# 设置容器启动命令
-ENTRYPOINT ["/wrk"]
+# 设置入口点
+ENTRYPOINT ["/usr/local/bin/wrk"]
