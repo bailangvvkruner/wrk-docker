@@ -34,7 +34,7 @@ RUN set -eux \
     && upx --best --lzma ./wrk \
     && echo "UPX压缩后最终大小:" \
     && du -b ./wrk \
-    find / -name *wrk*
+    && find / -name *wrk*
 
 # 阶段2: 运行层
 # FROM alpine:3.19
