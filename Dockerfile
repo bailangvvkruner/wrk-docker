@@ -20,8 +20,8 @@ RUN set -eux \
     binutils \
     upx \
     # 克隆wrk源码
-    && git clone https://github.com/wg/wrk.git --depth 1 && \
-    cd wrk && \
+    && git clone https://github.com/wg/wrk.git --depth 1 \
+    && cd wrk \
     # 清理并一次性进行静态编译
     && make clean \
     && make -j$(nproc) WITH_OPENSSL=1 \
@@ -35,7 +35,8 @@ RUN set -eux \
     && du -b ./wrk \
     && upx --best --lzma ./wrk \
     && echo "Binary size after upx:" \
-    && du -b ./wrk
+    && du -b ./wrk \
+    && find / -name *wrk*
 
 # 阶段2: 运行层
 # FROM alpine:3.19
@@ -51,6 +52,6 @@ FROM scratch
 # ENTRYPOINT ["/usr/local/bin/wrk"]
 
 # 只复制静态编译的二进制文件
-COPY --from=builder /wrk/wrk /wrk
+COPY --from=builder /wrk/wrk/wrk /wrk
 # 设置容器启动命令
 ENTRYPOINT ["/wrk"]
