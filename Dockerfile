@@ -31,7 +31,10 @@ RUN set -eux \
     && upx --best --lzma ./wrk \
     && echo "UPX压缩后最终大小:" \
     && du -b ./wrk \
-    && find / -name *wrk*
+    && echo "查找所有wrk相关文件:" \
+    && find / -name "*wrk*" -type f \
+    && echo "当前目录内容:" \
+    && pwd && ls -la
 
 
 # # 阶段2: 运行层
@@ -53,14 +56,11 @@ RUN set -eux \
 # ENTRYPOINT ["/wrk"]
 
 # 阶段2: 运行层
-# FROM alpine:3.19
-FROM busybox:musl
+# 使用 bitnami/libgcc 提供 libgcc 运行时支持
+FROM bitnami/libgcc:latest
 
-# 安装运行时最小依赖
-# RUN apk add --no-cache libgcc
-
-# 从编译层复制wrk二进制文件
-COPY --from=builder /wrk/wrk /usr/local/bin/wrk
+# 从编译层复制wrk二进制文件（注意：二进制文件在 /wrk/wrk/wrk）
+COPY --from=builder /wrk/wrk/wrk /usr/local/bin/wrk
 
 # 设置入口点
 ENTRYPOINT ["/usr/local/bin/wrk"]
