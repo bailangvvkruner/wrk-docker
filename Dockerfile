@@ -25,6 +25,7 @@ RUN set -eux \
     # 编译所有二进制文件（原版wrk + 分布式组件）
     && make -j$(nproc) WITH_OPENSSL=0 \
     && echo "编译成功，二进制文件列表:" \
+    && tree . \
     && ls -lh ./wrk ./wrk-master ./wrk-worker 2>/dev/null || true \
     # 剥离调试信息
     && strip -v --strip-all ./wrk \
