@@ -1,5 +1,5 @@
-# 最小化wrk Docker镜像构建
-# 基于多阶段构建和Alpine Linux，最终镜像约8MB
+# 分布式WRK Docker镜像构建
+# 包含：wrk (原版), wrk-master (命令端), wrk-worker (任务机)
 
 # 阶段1: 编译层
 FROM alpine:latest AS builder
@@ -19,49 +19,57 @@ RUN set -eux \
     binutils \
     upx \
     libgcc \
-    # 克隆wrk源码
-    && git clone https://github.com/wg/wrk.git --depth 1 \
+    # 克隆包含分布式功能的wrk源码
+    && git clone https://github.com/bailangvvkruner/wrk.git --depth 1 \
     && cd wrk \
-    # 编译wrk（不使用UPX压缩，避免运行时问题）
+    # 编译所有二进制文件（原版wrk + 分布式组件）
     && make -j$(nproc) WITH_OPENSSL=0 \
-    && echo "编译成功，二进制文件位置和大小:" \
-    && ls -lh ./wrk \
+    && echo "编译成功，二进制文件列表:" \
+    && ls -lh ./wrk ./wrk-master ./wrk-worker 2>/dev/null || true \
+    # 剥离调试信息
     && strip -v --strip-all ./wrk \
+    && strip -v --strip-all ./wrk-master 2>/dev/null || true \
+    && strip -v --strip-all ./wrk-worker 2>/dev/null || true \
     && echo "剥离调试信息后:" \
-    && ls -lh ./wrk \
+    && ls -lh ./wrk ./wrk-master ./wrk-worker 2>/dev/null || true \
+    # UPX压缩
     && upx --best --lzma ./wrk \
+    && upx --best --lzma ./wrk-master 2>/dev/null || true \
+    && upx --best --lzma ./wrk-worker 2>/dev/null || true \
     && echo "UPX压缩后最终大小:" \
-    && du -b ./wrk \
-    && echo "查找所有wrk相关文件:" \
-    && find / -name "*wrk*" -type f \
-    && echo "当前目录内容:" \
-    && pwd && ls -la
+    && du -b ./wrk ./wrk-master ./wrk-worker 2>/dev/null || true
 
-
-# # 阶段2: 运行层
-FROM alpine:3.19
-
-# # # 安装运行时依赖 - libgcc提供libgcc_s.so.1共享库
-RUN apk add --no-cache libgcc
-
-# # # 从编译层复制wrk二进制文件
-COPY --from=builder /wrk/wrk /usr/local/bin/wrk
-
-# 设置入口点
-ENTRYPOINT ["/usr/local/bin/wrk"]
-
-# # 只复制编译好的二进制文件（二进制位于/wrk/wrk目录内）
-# COPY --from=builder /wrk/wrk /wrk
-# # 设置容器启动命令
-# ENTRYPOINT ["/wrk"]
 
 # 阶段2: 运行层
-# 使用 bitnami/libgcc 提供 libgcc 运行时支持
-# FROM bitnami/libgcc:latest
-# FROM scratch
+FROM alpine:3.19
 
-# # 从Alpine容器中复制libgcc库
-# COPY --from=builder /usr/lib/libgcc_s.so.1 /lib/
-# # 从编译层复制wrk二进制文件（二进制文件是 /wrk/wrk）
-# COPY --from=builder /wrk/wrk /wrk
-# ENTRYPOINT ["/wrk"]
+# 安装运行时依赖
+RUN apk add --no-cache libgcc
+
+# 从编译层复制所有二进制文件
+COPY --from=builder /wrk/wrk /usr/local/bin/wrk
+COPY --from=builder /wrk/wrk-master /usr/local/bin/wrk-master 2>/dev/null || echo "wrk-master not found, skipping"
+COPY --from=builder /wrk/wrk-worker /usr/local/bin/wrk-worker 2>/dev/null || echo "wrk-worker not found, skipping"
+
+# 创建智能启动脚本
+RUN echo '#!/bin/sh
+# 智能入口点脚本
+# 根据第一个参数决定启动哪个组件
+
+if [ "$1" = "master" ]; then
+    shift
+    exec wrk-master "$@"
+elif [ "$1" = "worker" ]; then
+    shift
+    exec wrk-worker "$@"
+else
+    # 默认运行原版wrk
+    exec wrk "$@"
+fi' > /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
+
+# 设置入口点
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# 默认命令（显示帮助）
+CMD ["--help"]
