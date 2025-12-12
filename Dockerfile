@@ -52,20 +52,20 @@ COPY --from=builder /wrk/wrk-master /usr/local/bin/wrk-master 2>/dev/null || ech
 COPY --from=builder /wrk/wrk-worker /usr/local/bin/wrk-worker 2>/dev/null || echo "wrk-worker not found, skipping"
 
 # 创建智能启动脚本
-RUN echo '#!/bin/sh
-# 智能入口点脚本
-# 根据第一个参数决定启动哪个组件
-
-if [ "$1" = "master" ]; then
-    shift
-    exec wrk-master "$@"
-elif [ "$1" = "worker" ]; then
-    shift
-    exec wrk-worker "$@"
-else
-    # 默认运行原版wrk
-    exec wrk "$@"
-fi' > /usr/local/bin/entrypoint.sh \
+RUN printf '#!/bin/sh\n\
+# 智能入口点脚本\n\
+# 根据第一个参数决定启动哪个组件\n\
+\n\
+if [ "$1" = "master" ]; then\n\
+    shift\n\
+    exec wrk-master "$@"\n\
+elif [ "$1" = "worker" ]; then\n\
+    shift\n\
+    exec wrk-worker "$@"\n\
+else\n\
+    # 默认运行原版wrk\n\
+    exec wrk "$@"\n\
+fi\n' > /usr/local/bin/entrypoint.sh \
     && chmod +x /usr/local/bin/entrypoint.sh
 
 # 设置入口点
