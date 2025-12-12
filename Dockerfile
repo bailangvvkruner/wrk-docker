@@ -4,7 +4,7 @@
 # 阶段1: 编译层
 FROM alpine:latest AS builder
 
-# 安装构建依赖
+# 安装构建依赖（包括tree用于调试）
 RUN set -eux \
     && apk add --no-cache --no-scripts --virtual .build-deps \
     git \
@@ -19,6 +19,7 @@ RUN set -eux \
     binutils \
     upx \
     libgcc \
+    tree \
     # 克隆包含分布式功能的wrk源码
     && git clone -b both https://github.com/bailangvvkruner/wrk.git --depth 1 \
     && cd wrk \
@@ -28,15 +29,15 @@ RUN set -eux \
     && tree . \
     && ls -lh ./wrk ./wrk-master ./wrk-worker 2>/dev/null || true \
     # 剥离调试信息
-    && strip -v --strip-all ./wrk \
-    && strip -v --strip-all ./wrk-master 2>/dev/null || true \
-    && strip -v --strip-all ./wrk-worker 2>/dev/null || true \
+    && test -f ./wrk && strip -v --strip-all ./wrk || echo "wrk not found, skipping strip" \
+    && test -f ./wrk-master && strip -v --strip-all ./wrk-master || echo "wrk-master not found, skipping strip" \
+    && test -f ./wrk-worker && strip -v --strip-all ./wrk-worker || echo "wrk-worker not found, skipping strip" \
     && echo "剥离调试信息后:" \
     && ls -lh ./wrk ./wrk-master ./wrk-worker 2>/dev/null || true \
     # UPX压缩
-    && upx --best --lzma ./wrk \
-    && upx --best --lzma ./wrk-master 2>/dev/null || true \
-    && upx --best --lzma ./wrk-worker 2>/dev/null || true \
+    && test -f ./wrk && upx --best --lzma ./wrk || echo "wrk not found, skipping upx" \
+    && test -f ./wrk-master && upx --best --lzma ./wrk-master || echo "wrk-master not found, skipping upx" \
+    && test -f ./wrk-worker && upx --best --lzma ./wrk-worker || echo "wrk-worker not found, skipping upx" \
     && echo "UPX压缩后最终大小:" \
     && du -b ./wrk ./wrk-master ./wrk-worker 2>/dev/null || true
 
