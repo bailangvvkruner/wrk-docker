@@ -67,7 +67,7 @@ else
     # 默认运行原版wrk
     exec wrk "$@"
 fi
-EOF
+EOF \
 && chmod +x /usr/local/bin/entrypoint.sh
 
 # 设置入口点
