@@ -20,7 +20,7 @@ RUN set -eux \
     upx \
     libgcc \
     # 克隆包含分布式功能的wrk源码
-    && git clone https://github.com/bailangvvkruner/wrk.git --depth 1 \
+    && git clone -b both https://github.com/bailangvvkruner/wrk.git --depth 1 \
     && cd wrk \
     # 编译所有二进制文件（原版wrk + 分布式组件）
     && make -j$(nproc) WITH_OPENSSL=0 \
