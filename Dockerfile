@@ -52,7 +52,7 @@ COPY --from=builder /wrk/wrk-master /usr/local/bin/wrk-master
 COPY --from=builder /wrk/wrk-worker /usr/local/bin/wrk-worker
 
 # 创建智能启动脚本
-RUN cat > /usr/local/bin/entrypoint.sh << 'EOF'
+RUN cat > /usr/local/bin/entrypoint.sh << 'EOF' && chmod +x /usr/local/bin/entrypoint.sh
 #!/bin/sh
 # 智能入口点脚本
 # 根据第一个参数决定启动哪个组件
@@ -67,8 +67,7 @@ else
     # 默认运行原版wrk
     exec wrk "$@"
 fi
-EOF \
-&& chmod +x /usr/local/bin/entrypoint.sh
+EOF
 
 # 设置入口点
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
