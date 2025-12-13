@@ -38,7 +38,6 @@ RUN set -eux \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
     && echo "=== 剥离后文件信息 ===" \
-    && ls -lh ./wrk
     # && upx --best --lzma ./wrk \
     # && echo "UPX压缩后最终大小:" \
     # && du -b ./wrk \
