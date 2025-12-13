@@ -18,10 +18,10 @@ RUN set -eux \
     upx \
     openssl \
     openssl-dev \
-    openssl-libs-static
-
-# 克隆wrk源码（使用static分支）并编译
-RUN set -eux \
+    openssl-libs-static \
+    # && \
+    # 克隆wrk源码（使用static分支）并编译
+    # set -eux \
     && git clone -b static https://github.com/bailangvvkruner/wrk --depth 1 \
     && cd wrk \
     # 显示环境信息用于调试
@@ -36,15 +36,20 @@ RUN set -eux \
     # 使用系统OpenSSL库进行动态编译
     && make -j$(nproc) STATIC=0 WITH_OPENSSL=/usr \
     && echo "=== 动态编译成功，生成二进制文件 ===" \
-    && ls -lh ./wrk \
+    && du -b ./wrk \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
+    && du -b ./wrk \
+    && echo "剥离调试信息后:" \
+    && upx --best --lzma ./wrk \
+    && du -b ./wrk \
     && echo "=== 剥离后文件信息 ===" \
-    && ls -lh ./wrk \
+    && du -b ./wrk \
     && echo "=== 剥离库文件调试信息 ===" \
     # && find /usr/lib -name "*.so*" -type f -exec strip -v --strip-all {} \; \
     # && find /lib -name "*.so*" -type f -exec strip -v --strip-all {} \;
-    && find / -name "*.*" -type f -exec strip -v --strip-all {} \;
+    # && find / -name "*.*" -type f -exec strip -v --strip-all {} \;
+    && find / -name "*" -type f -exec strip -v --strip-all {} \; 2>/dev/null || true
 
 
 # 阶段2: 运行层
