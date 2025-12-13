@@ -30,21 +30,25 @@ RUN set -eux \
     && ls -la \
     && echo "=== OpenSSL 版本信息 ===" \
     && openssl version \
-    && echo "=== 开始静态编译 wrk ===" \
-    # 使用系统OpenSSL静态库进行编译
-    && make -j$(nproc) STATIC=1 WITH_OPENSSL=/usr \
-    && echo "=== 静态编译成功，生成二进制文件 ===" \
+    && echo "=== 开始动态编译 wrk ===" \
+    # && make -j$(nproc) STATIC=1 WITH_OPENSSL=/usr \
+    # && echo "=== 静态编译成功，生成二进制文件 ===" \
+    # 使用系统OpenSSL库进行动态编译
+    && make -j$(nproc) STATIC=0 WITH_OPENSSL=/usr \
+    && echo "=== 动态编译成功，生成二进制文件 ===" \
     && ls -lh ./wrk \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
     && echo "=== 剥离后文件信息 ===" \
-    && ls -lh ./wrk \
-    && echo "=== UPX压缩 ===" \
-    && upx --best --lzma ./wrk \
-    && echo "=== 压缩后文件信息 ===" \
+    # && ls -lh ./wrk \
+    # && echo "=== UPX压缩 ===" \
+    # && upx --best --lzma ./wrk \
+    # && echo "=== 压缩后文件信息 ===" \
     && ls -lh ./wrk
 
-# # 阶段2: 运行层
+
+# 阶段2: 运行层
+
 # FROM alpine:3.19
 # # 安装运行时依赖 - libgcc提供libgcc_s.so.1共享库
 # RUN apk add --no-cache libgcc
@@ -52,14 +56,23 @@ RUN set -eux \
 # # 从编译层复制wrk二进制文件
 # COPY --from=builder /wrk/wrk /usr/local/bin/wrk
 
-# 阶段2: 运行层 - 使用scratch镜像（最小化）
-
 # # 设置入口点
-# ENTRYPOINT ["/usr/local/bin/wrk"]
-
+# ENTRYPOINT ["/usr/local/bin/wrk"]    # 阶段2: 运行层 - 使用scratch镜像（最小化）
 FROM scratch
 
-# 从编译层复制完全静态的wrk二进制文件
+# 复制动态链接所需的库文件
+# musl libc 加载器
+COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/
+# GCC 运行时库
+COPY --from=builder /usr/lib/libgcc_s.so.1 /usr/lib/
+# OpenSSL 库（如果动态链接）
+COPY --from=builder /usr/lib/libssl.so.3 /usr/lib/ 2>/dev/null || true
+COPY --from=builder /usr/lib/libcrypto.so.3 /usr/lib/ 2>/dev/null || true
+# 对于旧版 OpenSSL 1.1.x
+COPY --from=builder /usr/lib/libssl.so.1.1 /usr/lib/ 2>/dev/null || true
+COPY --from=builder /usr/lib/libcrypto.so.1.1 /usr/lib/ 2>/dev/null || true
+
+# 复制wrk二进制文件
 COPY --from=builder /wrk/wrk /wrk
 
 # 设置入口点
