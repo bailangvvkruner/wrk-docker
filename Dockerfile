@@ -4,7 +4,7 @@
 # 阶段1: 编译层
 FROM alpine:latest AS builder
 
-# 安装构建依赖
+# 安装构建依赖（包括OpenSSL静态库）
 RUN set -eux \
     && apk add --no-cache --no-scripts --virtual .build-deps \
     git \
@@ -15,7 +15,9 @@ RUN set -eux \
     zlib-dev \
     perl \
     binutils \
-    upx
+    upx \
+    openssl-dev \
+    openssl-libs-static
 
 # 克隆wrk源码（使用static分支）并编译
 RUN set -eux \
@@ -25,19 +27,24 @@ RUN set -eux \
     && echo "=== 构建环境信息 ===" \
     && pwd \
     && ls -la \
+    && echo "=== OpenSSL 版本信息 ===" \
+    && openssl version \
     && echo "=== Makefile 内容前20行 ===" \
     && head -20 Makefile \
     && echo "=== 开始静态编译 wrk ===" \
-    # 静态编译wrk（使用STATIC=1标志）
-    && make -j$(nproc) STATIC=1 V=1 \
+    # 使用系统OpenSSL静态库进行编译
+    && make -j$(nproc) STATIC=1 WITH_OPENSSL=/usr \
     && echo "=== 静态编译成功 ===" \
     && ls -lh ./wrk \
     && echo "=== 文件类型信息 ===" \
     && file ./wrk \
+    && echo "=== 检查动态库依赖 ===" \
+    && ldd ./wrk 2>/dev/null || echo "静态二进制文件，无动态库依赖" \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
     && echo "=== 剥离后文件信息 ===" \
     && ls -lh ./wrk \
+    && echo "=== 最终文件检查 ===" \
     # && upx --best --lzma ./wrk \
     # && echo "UPX压缩后最终大小:" \
     # && du -b ./wrk \
