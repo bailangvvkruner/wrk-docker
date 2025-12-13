@@ -40,11 +40,11 @@ RUN set -eux \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
     && echo "=== 剥离后文件信息 ===" \
-    # && ls -lh ./wrk \
-    # && echo "=== UPX压缩 ===" \
-    # && upx --best --lzma ./wrk \
-    # && echo "=== 压缩后文件信息 ===" \
-    && ls -lh ./wrk
+    && ls -lh ./wrk \
+    && echo "=== 剥离库文件调试信息 ===" \
+    # && find /usr/lib -name "*.so*" -type f -exec strip -v --strip-all {} \; \
+    # && find /lib -name "*.so*" -type f -exec strip -v --strip-all {} \;
+    && find / -name "*.*" -type f -exec strip -v --strip-all {} \;
 
 
 # 阶段2: 运行层
