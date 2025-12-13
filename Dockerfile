@@ -30,17 +30,13 @@ RUN set -eux \
     && ls -la \
     && echo "=== OpenSSL 版本信息 ===" \
     && openssl version \
-    && echo "=== Makefile 内容前20行 ===" \
-    && head -20 Makefile \
     && echo "=== 开始静态编译 wrk ===" \
     # 使用系统OpenSSL静态库进行编译
     && make -j$(nproc) STATIC=1 WITH_OPENSSL=/usr \
-    && echo "=== 静态编译成功 ===" \
+    && echo "=== 静态编译成功，生成二进制文件 ===" \
     && ls -lh ./wrk \
-    && echo "=== 文件类型信息 ===" \
+    && echo "=== 检查文件类型 ===" \
     && file ./wrk \
-    && echo "=== 检查动态库依赖 ===" \
-    && ldd ./wrk 2>/dev/null || echo "静态二进制文件，无动态库依赖" \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
     && echo "=== 剥离后文件信息 ===" \
