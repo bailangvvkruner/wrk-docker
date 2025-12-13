@@ -65,12 +65,9 @@ FROM scratch
 COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/
 # GCC 运行时库
 COPY --from=builder /usr/lib/libgcc_s.so.1 /usr/lib/
-# OpenSSL 库（如果动态链接）
-COPY --from=builder /usr/lib/libssl.so.3 /usr/lib/ 2>/dev/null || true
-COPY --from=builder /usr/lib/libcrypto.so.3 /usr/lib/ 2>/dev/null || true
-# 对于旧版 OpenSSL 1.1.x
-COPY --from=builder /usr/lib/libssl.so.1.1 /usr/lib/ 2>/dev/null || true
-COPY --from=builder /usr/lib/libcrypto.so.1.1 /usr/lib/ 2>/dev/null || true
+# OpenSSL 库（Alpine 使用 OpenSSL 3.x）
+COPY --from=builder /usr/lib/libssl.so.3 /usr/lib/
+COPY --from=builder /usr/lib/libcrypto.so.3 /usr/lib/
 
 # 复制wrk二进制文件
 COPY --from=builder /wrk/wrk /wrk
