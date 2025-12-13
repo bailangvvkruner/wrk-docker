@@ -35,13 +35,10 @@ RUN set -eux \
     && make -j$(nproc) STATIC=1 WITH_OPENSSL=/usr \
     && echo "=== 静态编译成功，生成二进制文件 ===" \
     && ls -lh ./wrk \
-    && echo "=== 检查文件类型 ===" \
-    && file ./wrk \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
     && echo "=== 剥离后文件信息 ===" \
-    && ls -lh ./wrk \
-    && echo "=== 最终文件检查 ===" \
+    && ls -lh ./wrk
     # && upx --best --lzma ./wrk \
     # && echo "UPX压缩后最终大小:" \
     # && du -b ./wrk \
@@ -49,7 +46,7 @@ RUN set -eux \
     # && find / -name "*wrk*" -type f \
     # && echo "当前目录内容:" \
     # && pwd && ls -la
-    && file ./wrk
+    && ls -lh ./wrk
 
 # # 阶段2: 运行层
 # FROM alpine:3.19
