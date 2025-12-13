@@ -4,7 +4,7 @@
 # 阶段1: 编译层
 FROM alpine:latest AS builder
 
-# 安装构建依赖（包括OpenSSL静态库）
+# 安装构建依赖（包括OpenSSL静态库和命令行工具）
 RUN set -eux \
     && apk add --no-cache --no-scripts --virtual .build-deps \
     git \
@@ -16,6 +16,7 @@ RUN set -eux \
     perl \
     binutils \
     upx \
+    openssl \
     openssl-dev \
     openssl-libs-static
 
