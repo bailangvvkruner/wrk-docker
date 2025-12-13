@@ -38,13 +38,10 @@ RUN set -eux \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
     && echo "=== 剥离后文件信息 ===" \
-    # && upx --best --lzma ./wrk \
-    # && echo "UPX压缩后最终大小:" \
-    # && du -b ./wrk \
-    # && echo "查找所有wrk相关文件:" \
-    # && find / -name "*wrk*" -type f \
-    # && echo "当前目录内容:" \
-    # && pwd && ls -la
+    && ls -lh ./wrk \
+    && echo "=== UPX压缩 ===" \
+    && upx --best --lzma ./wrk \
+    && echo "=== 压缩后文件信息 ===" \
     && ls -lh ./wrk
 
 # # 阶段2: 运行层
