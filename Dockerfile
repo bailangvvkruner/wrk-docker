@@ -15,20 +15,29 @@ RUN set -eux \
     zlib-dev \
     perl \
     binutils \
-    upx \
-    # 克隆wrk源码（使用static分支）
+    upx
+
+# 克隆wrk源码（使用static分支）并编译
+RUN set -eux \
     && git clone -b static https://github.com/bailangvvkruner/wrk --depth 1 \
     && cd wrk \
+    # 显示环境信息用于调试
+    && echo "=== 构建环境信息 ===" \
+    && pwd \
+    && ls -la \
+    && echo "=== Makefile 内容前20行 ===" \
+    && head -20 Makefile \
+    && echo "=== 开始静态编译 wrk ===" \
     # 静态编译wrk（使用STATIC=1标志）
-    && make -j$(nproc) STATIC=1 \
-    # 静态编译的话是需要openssl依赖头的
-    # && make -j$(nproc) STATIC=1 WITH_OPENSSL=0 \
-    && echo "静态编译成功，二进制文件位置和大小:" \
+    && make -j$(nproc) STATIC=1 V=1 \
+    && echo "=== 静态编译成功 ===" \
     && ls -lh ./wrk \
-    # 剥离调试信息
+    && echo "=== 文件类型信息 ===" \
+    && file ./wrk \
+    && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
-    && echo "剥离调试信息后:" \
-    && ls -lh ./wrk
+    && echo "=== 剥离后文件信息 ===" \
+    && ls -lh ./wrk \
     # && upx --best --lzma ./wrk \
     # && echo "UPX压缩后最终大小:" \
     # && du -b ./wrk \
@@ -36,6 +45,7 @@ RUN set -eux \
     # && find / -name "*wrk*" -type f \
     # && echo "当前目录内容:" \
     # && pwd && ls -la
+    && file ./wrk
 
 # # 阶段2: 运行层
 # FROM alpine:3.19
