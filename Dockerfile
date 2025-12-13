@@ -20,7 +20,7 @@ RUN set -eux \
     upx \
     libgcc \
     # 克隆wrk源码
-    && git clone -b static https://github.com/bailangvvkruner/wrk --depth 1 \
+    && git clone -b master https://github.com/bailangvvkruner/wrk --depth 1 \
     && cd wrk \
     # 编译wrk（不使用UPX压缩，避免运行时问题）
     && make -j$(nproc) WITH_OPENSSL=0 \
