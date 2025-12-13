@@ -20,7 +20,8 @@ RUN set -eux \
     && git clone -b static https://github.com/bailangvvkruner/wrk --depth 1 \
     && cd wrk \
     # 静态编译wrk（使用STATIC=1标志）
-    && make -j$(nproc) STATIC=1 \
+    # && make -j$(nproc) STATIC=1 \
+    && make -j$(nproc) STATIC=1 WITH_OPENSSL=0 \
     && echo "静态编译成功，二进制文件位置和大小:" \
     && ls -lh ./wrk \
     # 剥离调试信息
