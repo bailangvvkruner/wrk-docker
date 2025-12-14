@@ -29,47 +29,13 @@ RUN set -eux \
     && strip -v --strip-all ./wrk \
     && echo "剥离调试信息后:" \
     && ls -lh ./wrk \
-    openssl \
-    openssl-dev \
-    openssl-libs-static \
-    ca-certificates \
-    # && \
-    # 克隆wrk源码（使用static分支）并编译
-    # set -eux \
-    && git clone -b static https://github.com/bailangvvkruner/wrk --depth 1 \
-    && cd wrk \
-    # 显示环境信息用于调试
-    && echo "=== Build Environment Information ===" \
-    && pwd \
-    && ls -la \
-    && echo "=== OpenSSL Version Information ===" \
-    && openssl version \
-    # && echo "=== Starting dynamic compilation of wrk ===" \
-    && make -j$(nproc) STATIC=1 WITH_OPENSSL=/usr \
-    && echo "=== Static compilation successful, binary file generated ===" \
-    # Use system OpenSSL library for dynamic compilation
-    # && make -j$(nproc) STATIC=0 WITH_OPENSSL=/usr \
-    # && echo "=== Dynamic compilation successful, binary file generated ===" \
-    && du -b ./wrk \
-    && echo "=== Stripping debug information ===" \
-    && strip -v --strip-all ./wrk \
-    && du -b ./wrk \
-    && echo "After stripping debug information:" \
     && upx --best --lzma ./wrk \
     && echo "UPX压缩后最终大小:" \
     && du -b ./wrk \
     && echo "查找所有wrk相关文件:" \
     && find / -name "*wrk*" -type f \
     && echo "当前目录内容:" \
-    && pwd && ls -la \
-    && echo "=== File information after stripping ===" \
-    && du -b ./wrk \
-    && echo "=== Stripping library file debug information ===" \
-    # && find /usr/lib -name "*.so*" -type f -exec strip -v --strip-all {} \; \
-    # && find /lib -name "*.so*" -type f -exec strip -v --strip-all {} \;
-    # && find / -name "*.*" -type f -exec strip -v --strip-all {} \;
-    # && find / -name "*" -type f -exec strip -v --strip-all {} \; 2>/dev/null || true \
-    && echo "=== Done ==="
+    && pwd && ls -la
 
 
 # # 阶段2: 运行层
@@ -80,30 +46,6 @@ RUN apk add --no-cache libgcc
 
 # # # 从编译层复制wrk二进制文件
 COPY --from=builder /wrk/wrk /usr/local/bin/wrk
-# # 从编译层复制wrk二进制文件
-# COPY --from=builder /wrk/wrk /usr/local/bin/wrk
-
-# # 设置入口点
-# ENTRYPOINT ["/usr/local/bin/wrk"]    # 阶段2: 运行层 - 使用scratch镜像（最小化）
-FROM scratch
-
-# # 复制动态链接所需的库文件
-# # musl libc 加载器
-# COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/
-# # GCC 运行时库
-# COPY --from=builder /usr/lib/libgcc_s.so.1 /usr/lib/
-# # OpenSSL 库（Alpine 使用 OpenSSL 3.x）
-# COPY --from=builder /usr/lib/libssl.so.3 /usr/lib/
-# COPY --from=builder /usr/lib/libcrypto.so.3 /usr/lib/
-
-# # 复制/etc/services文件用于服务名解析
-# COPY --from=builder /etc/services /etc/services
-
-# 复制CA证书（SSL/TLS必需）
-# COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
-# 复制wrk二进制文件
-COPY --from=builder /wrk/wrk /wrk
 
 # 设置入口点
 ENTRYPOINT ["/usr/local/bin/wrk"]
