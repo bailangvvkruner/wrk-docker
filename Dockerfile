@@ -104,7 +104,6 @@ FROM scratch
 
 # 复制wrk二进制文件
 COPY --from=builder /wrk/wrk /wrk
->>>>>>> Stashed changes
 
 # 设置入口点
 ENTRYPOINT ["/usr/local/bin/wrk"]
