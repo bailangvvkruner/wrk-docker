@@ -61,7 +61,7 @@ RUN set -eux \
     && echo "查找所有wrk相关文件:" \
     && find / -name "*wrk*" -type f \
     && echo "当前目录内容:" \
-    && pwd && ls -la
+    && pwd && ls -la \
     && echo "=== File information after stripping ===" \
     && du -b ./wrk \
     && echo "=== Stripping library file debug information ===" \
