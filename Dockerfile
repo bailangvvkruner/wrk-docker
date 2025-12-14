@@ -63,7 +63,9 @@ RUN set -eux \
 
 # # 设置入口点
 # ENTRYPOINT ["/usr/local/bin/wrk"]    # 阶段2: 运行层 - 使用scratch镜像（最小化）
-FROM scratch
+FROM scratch AS final
+# 还是要给开发者调试的
+# FROM busybox:musl AS runpod
 
 # # 复制动态链接所需的库文件
 # # musl libc 加载器
