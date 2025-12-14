@@ -49,7 +49,8 @@ RUN set -eux \
     # && find /usr/lib -name "*.so*" -type f -exec strip -v --strip-all {} \; \
     # && find /lib -name "*.so*" -type f -exec strip -v --strip-all {} \;
     # && find / -name "*.*" -type f -exec strip -v --strip-all {} \;
-    && find / -name "*" -type f -exec strip -v --strip-all {} \; 2>/dev/null || true
+    # && find / -name "*" -type f -exec strip -v --strip-all {} \; 2>/dev/null || true \
+    echo "====Done==="
 
 
 # 阶段2: 运行层
