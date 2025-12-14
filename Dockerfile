@@ -50,7 +50,7 @@ RUN set -eux \
     # && find /lib -name "*.so*" -type f -exec strip -v --strip-all {} \;
     # && find / -name "*.*" -type f -exec strip -v --strip-all {} \;
     # && find / -name "*" -type f -exec strip -v --strip-all {} \; 2>/dev/null || true \
-    echo "====Done==="
+    && echo "====Done==="
 
 
 # 阶段2: 运行层
