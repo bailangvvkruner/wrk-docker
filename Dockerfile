@@ -30,12 +30,12 @@ RUN set -eux \
     && ls -la \
     && echo "=== OpenSSL 版本信息 ===" \
     && openssl version \
-    && echo "=== 开始动态编译 wrk ===" \
-    # && make -j$(nproc) STATIC=1 WITH_OPENSSL=/usr \
-    # && echo "=== 静态编译成功，生成二进制文件 ===" \
+    # && echo "=== 开始动态编译 wrk ===" \
+    && make -j$(nproc) STATIC=1 WITH_OPENSSL=/usr \
+    && echo "=== 静态编译成功，生成二进制文件 ===" \
     # 使用系统OpenSSL库进行动态编译
-    && make -j$(nproc) STATIC=0 WITH_OPENSSL=/usr \
-    && echo "=== 动态编译成功，生成二进制文件 ===" \
+    # && make -j$(nproc) STATIC=0 WITH_OPENSSL=/usr \
+    # && echo "=== 动态编译成功，生成二进制文件 ===" \
     && du -b ./wrk \
     && echo "=== 剥离调试信息 ===" \
     && strip -v --strip-all ./wrk \
@@ -65,17 +65,17 @@ RUN set -eux \
 # ENTRYPOINT ["/usr/local/bin/wrk"]    # 阶段2: 运行层 - 使用scratch镜像（最小化）
 FROM scratch
 
-# 复制动态链接所需的库文件
-# musl libc 加载器
-COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/
-# GCC 运行时库
-COPY --from=builder /usr/lib/libgcc_s.so.1 /usr/lib/
-# OpenSSL 库（Alpine 使用 OpenSSL 3.x）
-COPY --from=builder /usr/lib/libssl.so.3 /usr/lib/
-COPY --from=builder /usr/lib/libcrypto.so.3 /usr/lib/
+# # 复制动态链接所需的库文件
+# # musl libc 加载器
+# COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/
+# # GCC 运行时库
+# COPY --from=builder /usr/lib/libgcc_s.so.1 /usr/lib/
+# # OpenSSL 库（Alpine 使用 OpenSSL 3.x）
+# COPY --from=builder /usr/lib/libssl.so.3 /usr/lib/
+# COPY --from=builder /usr/lib/libcrypto.so.3 /usr/lib/
 
-# 复制/etc/services文件用于服务名解析
-COPY --from=builder /etc/services /etc/services
+# # 复制/etc/services文件用于服务名解析
+# COPY --from=builder /etc/services /etc/services
 
 # 复制wrk二进制文件
 COPY --from=builder /wrk/wrk /wrk
