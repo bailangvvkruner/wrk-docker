@@ -80,5 +80,9 @@ FROM scratch
 # 复制wrk二进制文件
 COPY --from=builder /wrk/wrk /wrk
 
+# 在Dockerfile的scratch阶段添加复制Lua脚本的指令
+COPY --from=builder /wrk/scripts/ /scripts/
+COPY --from=builder /wrk/src/wrk.lua /wrk.lua
+
 # 设置入口点
 ENTRYPOINT ["/wrk"]
