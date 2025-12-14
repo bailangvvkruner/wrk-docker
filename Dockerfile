@@ -18,7 +18,6 @@ RUN set -eux \
     perl \
     binutils \
     upx \
-<<<<<<< Updated upstream
     libgcc \
     # 克隆wrk源码
     && git clone https://github.com/wg/wrk.git --depth 1 \
@@ -30,7 +29,6 @@ RUN set -eux \
     && strip -v --strip-all ./wrk \
     && echo "剥离调试信息后:" \
     && ls -lh ./wrk \
-=======
     openssl \
     openssl-dev \
     openssl-libs-static \
@@ -57,16 +55,13 @@ RUN set -eux \
     && strip -v --strip-all ./wrk \
     && du -b ./wrk \
     && echo "After stripping debug information:" \
->>>>>>> Stashed changes
     && upx --best --lzma ./wrk \
     && echo "UPX压缩后最终大小:" \
     && du -b ./wrk \
-<<<<<<< Updated upstream
     && echo "查找所有wrk相关文件:" \
     && find / -name "*wrk*" -type f \
     && echo "当前目录内容:" \
     && pwd && ls -la
-=======
     && echo "=== File information after stripping ===" \
     && du -b ./wrk \
     && echo "=== Stripping library file debug information ===" \
@@ -75,7 +70,6 @@ RUN set -eux \
     # && find / -name "*.*" -type f -exec strip -v --strip-all {} \;
     # && find / -name "*" -type f -exec strip -v --strip-all {} \; 2>/dev/null || true \
     && echo "=== Done ==="
->>>>>>> Stashed changes
 
 
 # # 阶段2: 运行层
@@ -84,10 +78,8 @@ FROM alpine:3.19
 # # # 安装运行时依赖 - libgcc提供libgcc_s.so.1共享库
 RUN apk add --no-cache libgcc
 
-<<<<<<< Updated upstream
 # # # 从编译层复制wrk二进制文件
 COPY --from=builder /wrk/wrk /usr/local/bin/wrk
-=======
 # # 从编译层复制wrk二进制文件
 # COPY --from=builder /wrk/wrk /usr/local/bin/wrk
 
