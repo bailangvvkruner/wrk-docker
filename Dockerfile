@@ -20,7 +20,7 @@ RUN apk add --no-cache --no-scripts --virtual .build-deps \
     openssl-libs-static
 
 # 克隆wrk源码（使用包含分布式功能的分支）
-RUN git clone -b static https://github.com/bailangvvkruner/wrk --depth 1
+RUN git clone -b both https://github.com/bailangvvkruner/wrk --depth 1
 
 # 检查是否包含分布式功能文件
 RUN cd wrk && \
