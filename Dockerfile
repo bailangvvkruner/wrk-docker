@@ -77,8 +77,8 @@ FROM scratch AS final
 # COPY --from=builder /usr/lib/libssl.so.3 /usr/lib/
 # COPY --from=builder /usr/lib/libcrypto.so.3 /usr/lib/
 
-# # 复制/etc/services文件用于服务名解析
-# COPY --from=builder /etc/services /etc/services
+# 复制/etc/services文件用于服务名解析 DNS解析要用
+COPY --from=builder /etc/services /etc/services
 
 # 复制wrk二进制文件
 COPY --from=builder /wrk/wrk /wrk
