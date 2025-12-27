@@ -6,19 +6,26 @@ FROM alpine:latest AS builder
 
 # 安装构建依赖（包括OpenSSL静态库和命令行工具）
 RUN set -eux \
+    && FILENAME=wrk \
     && apk add --no-cache --no-scripts --virtual .build-deps \
     git \
-    make \
-    gcc \
-    musl-dev \
+    # make \
+    # gcc \
+    # musl-dev \
+    build-base \
     libbsd-dev \
     zlib-dev \
     perl \
     binutils \
-    upx \
+    # upx \
     openssl \
     openssl-dev \
     openssl-libs-static \
+    # 尝试安装 upx，如果不可用则继续（某些架构可能不支持）
+    \
+    && apk add --no-cache --no-scripts --virtual .upx-deps \
+        upx 2>/dev/null || echo "upx not available, skipping compression" \
+    \
     # && \
     # 克隆wrk源码（使用static分支）并编译
     # set -eux \
@@ -38,13 +45,14 @@ RUN set -eux \
     # && echo "=== 动态编译成功，生成二进制文件 ===" \
     && du -b ./wrk \
     && echo "=== 剥离调试信息 ===" \
-    && strip -v --strip-all ./wrk \
-    && du -b ./wrk \
+    && strip -v --strip-all ./$FILENAME \
+    && du -b ./$FILENAME \
     && echo "剥离调试信息后:" \
-    && upx --best --lzma ./wrk \
-    && du -b ./wrk \
+    # && upx --best --lzma ./wrk \
+    && (upx --best --lzma ./$FILENAME 2>/dev/null || echo "upx compression skipped") \
+    && du -b ./$FILENAME \
     && echo "=== 剥离后文件信息 ===" \
-    && du -b ./wrk \
+    && du -b ./$FILENAME \
     && echo "=== 剥离库文件调试信息 ===" \
     # && find /usr/lib -name "*.so*" -type f -exec strip -v --strip-all {} \; \
     # && find /lib -name "*.so*" -type f -exec strip -v --strip-all {} \;
