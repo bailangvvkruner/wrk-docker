@@ -64,15 +64,20 @@ jobs:
           #     linux/ppc64le
           #     linux/mips64le
           #     linux/s390x
+
+          ## LUAJIT已确认支持的架构：
+          # - __linux/386__ - 支持
+          # - __linux/amd64__ - 支持
+          # - __linux/arm/v6__ - 支持
+          # - __linux/arm/v7__ - 支持
+          # - __linux/arm64/v8__ - 支持
+
           platforms: |
               linux/386
               linux/amd64
               linux/arm/v6
               linux/arm/v7
               linux/arm64/v8
-              linux/ppc64le
-              linux/riscv64
-              linux/s390x
           push: true
           tags: |
             ${{ env.DOCKER_REPO }}:${{ env.IMAGE_TAG }}
