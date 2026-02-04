@@ -9,16 +9,17 @@
 # - x86_32: 启用SSE和MMX优化 (march=i686)
 #
 # 通用优化技术:
-# - Ofat优化级别 + LTO链接时优化
+# - Ofast优化级别 + LTO链接时优化
 # - 快速数学运算 + 循环展开 + 向量化
 # - 图优化 + 嵌套循环优化 + 过程间分析
 # - 静态链接 + 死代码消除 + 符号剥离
 # - UPX极致压缩
 #
-# Ofat优化说明:
-# - Ofat是比O3更激进的优化级别，专注于最大性能
-# - 可能会增加编译时间和二进制大小，但提供最佳运行时性能
+# Ofast优化说明:
+# - Ofast是比O3更激进的优化级别，专注于最大性能
+# - 允许编译器进行激进优化，可能违反严格的IEEE/ISO标准
 # - 适用于性能关键型应用，如wrk压力测试工具
+# - 可能会增加编译时间和二进制大小，但提供最佳运行时性能
 
 # 阶段1: 编译层
 FROM alpine:latest AS builder
@@ -71,29 +72,29 @@ RUN set -eux \
     && ARCH=$(uname -m) \
     && if [ "$ARCH" = "x86_64" ]; then \
         echo "=== x86_64架构，启用AVX2和高级指令集优化 ===" \
-        && export CFLAGS="-std=c99 -Wall -Ofat -march=x86-64-v3 -mtune=generic -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
+        && export CFLAGS="-std=c99 -Wall -Ofast -march=x86-64-v3 -mtune=generic -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
         && export LDFLAGS="-static -Wl,-O3 -Wl,--gc-sections -Wl,--strip-all -Wl,-E -flto=auto -Wl,--sort-common -Wl,--as-needed" \
-        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofat -march=x86-64-v3 -mtune=generic" \
+        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofast -march=x86-64-v3 -mtune=generic" \
     ; elif [ "$ARCH" = "aarch64" ]; then \
         echo "=== ARM64架构，启用ARM NEON和高级指令集优化 ===" \
-        && export CFLAGS="-std=c99 -Wall -Ofat -march=armv8.2-a+crypto+fp16+dotprod -mtune=generic -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
+        && export CFLAGS="-std=c99 -Wall -Ofast -march=armv8.2-a+crypto+fp16+dotprod -mtune=generic -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
         && export LDFLAGS="-static -Wl,-O3 -Wl,--gc-sections -Wl,--strip-all -Wl,-E -flto=auto -Wl,--sort-common -Wl,--as-needed" \
-        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofat -march=armv8.2-a+crypto+fp16+dotprod -mtune=generic" \
+        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofast -march=armv8.2-a+crypto+fp16+dotprod -mtune=generic" \
     ; elif [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "armv6l" ]; then \
         echo "=== ARM32架构，启用ARM NEON优化 ===" \
-        && export CFLAGS="-std=c99 -Wall -Ofat -march=armv7-a+fp -mtune=generic-armv7-a -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
+        && export CFLAGS="-std=c99 -Wall -Ofast -march=armv7-a+fp -mtune=generic-armv7-a -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
         && export LDFLAGS="-static -Wl,-O3 -Wl,--gc-sections -Wl,--strip-all -Wl,-E -flto=auto -Wl,--sort-common -Wl,--as-needed" \
-        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofat -march=armv7-a+fp -mtune=generic-armv7-a" \
+        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofast -march=armv7-a+fp -mtune=generic-armv7-a" \
     ; elif [ "$ARCH" = "i686" ] || [ "$ARCH" = "i386" ]; then \
         echo "=== x86_32架构，启用SSE和MMX优化 ===" \
-        && export CFLAGS="-std=c99 -Wall -Ofat -march=i686 -mtune=generic -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
+        && export CFLAGS="-std=c99 -Wall -Ofast -march=i686 -mtune=generic -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
         && export LDFLAGS="-static -Wl,-O3 -Wl,--gc-sections -Wl,--strip-all -Wl,-E -flto=auto -Wl,--sort-common -Wl,--as-needed" \
-        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofat -march=i686 -mtune=generic" \
+        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofast -march=i686 -mtune=generic" \
     ; else \
         echo "=== 未知架构 $ARCH，使用通用优化 ===" \
-        && export CFLAGS="-std=c99 -Wall -Ofat -march=native -mtune=native -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
+        && export CFLAGS="-std=c99 -Wall -Ofast -march=native -mtune=native -flto=auto -ffast-math -funroll-loops -fprefetch-loop-arrays -fgraphite-identity -floop-nest-optimize -fipa-pta -ftree-vectorize -frename-registers -freorder-blocks -fsched2-use-superblocks -D_REENTRANT -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE -D_DEFAULT_SOURCE" \
         && export LDFLAGS="-static -Wl,-O3 -Wl,--gc-sections -Wl,--strip-all -Wl,-E -flto=auto -Wl,--sort-common -Wl,--as-needed" \
-        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofat -march=native -mtune=native" \
+        && export OPENSSL_OPTS="no-shared no-psk no-srp no-dtls no-idea no-ssl3 no-weak-ssl-ciphers no-comp no-zlib no-zlib-dynamic no-dynamic-engine --prefix=/usr --libdir=lib -Ofast -march=native -mtune=native" \
     ; fi \
     && export MAKEFLAGS="-j$(nproc)" \
     && echo "=== 架构特定优化参数设置完成 ===" \
