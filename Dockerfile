@@ -29,7 +29,7 @@ RUN set -eux \
     # && \
     # 克隆wrk源码（使用static分支）并编译
     # set -eux \
-    && git clone -b static https://github.com/bailangvvkruner/wrk --depth 1 \
+    && git clone -b fast https://github.com/bailangvvkruner/wrk --depth 1 \
     && cd wrk \
     # 显示环境信息用于调试
     && echo "=== 构建环境信息 ===" \

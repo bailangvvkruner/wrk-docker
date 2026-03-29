@@ -3,7 +3,7 @@ name: Wrk Docker Image CI/CD Pipeline
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ fast ]
   # schedule:
   #   - cron: '0 3 * * *' # 每天构建一次（可选）
   # schedule:
@@ -19,7 +19,7 @@ permissions:
 env:
   DOCKER_REPO: bailangvvking/wrk
   IMAGE_NAME: wrk
-  IMAGE_TAG: latest
+  IMAGE_TAG: fast
 
 jobs:
   build-and-push:
@@ -73,11 +73,7 @@ jobs:
           # - __linux/arm64/v8__ - 支持
 
           platforms: |
-              linux/386
               linux/amd64
-              linux/arm/v6
-              linux/arm/v7
-              linux/arm64/v8
           push: true
           tags: |
             ${{ env.DOCKER_REPO }}:${{ env.IMAGE_TAG }}
@@ -100,7 +96,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:fast
           format: 'sarif'
           output: 'trivy-results.sarif'
           # 禁用缓存以减少存储使用
