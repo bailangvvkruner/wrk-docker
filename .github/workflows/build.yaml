@@ -25,10 +25,10 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on:
-      # ubuntu-latest
-      - self-hosted
-      - linux
-      - x64
+      ubuntu-latest
+      # - self-hosted
+      # - linux
+      # - x64
     # 增加超时时间（自托管运行器可以设置更长时间）
     timeout-minutes: 1440  # 24小时
     
